@@ -1,2 +1,2 @@
-gym_tic_tac_toe.egg-info/*
-__pycache__/*
+**/gym_tic_tac_toe.egg-info/*
+**/__pycache__/*
