@@ -1,6 +1,7 @@
 import gym
 import numpy as np
 from gym import spaces
+import copy
 
 
 class TicTacToeEnv(gym.Env):
@@ -9,14 +10,17 @@ class TicTacToeEnv(gym.Env):
 
     Two players play at each turn.
 
-    Observations have 9 dimensions, one for each position on the board and
+    Observations are 9d numpy arrays, one for each position on the board and
     each position is either 0, 1 or 2 corresponding to no X and no O, X or O respectively.
+    
 
     Actions and their corresponding positions on the board:
         0 1 2
         3 4 5
         6 7 8
-    Each action corresponds to placing an X or an O (depending on who is playing)
+    Each action is an integer and corresponds to placing an X or an O
+    (depending on who is playing)
+    
     """
     def __init__(self, r_win=1, r_draw=0, r_lost=0):
         """
@@ -43,27 +47,25 @@ class TicTacToeEnv(gym.Env):
         self.current_player_dict = {1: "X", 2: "O"}
         
         
-        
     def step(self, action):
         """
         Performing an action either places a X or O at the corresponding location
         depending on who is currently playing.
         """
         info = {}
-
+        
         # Check if action possible from the environment state
         if not(self.check_action_possible(action)):
             raise Exception("Action not permitted")
 
-        # place X or O respectively
-        if self.current_player == 1:
-            print("place X")
-            obs = self.Box(np.zeros(9)) # TODO: Change this
-        elif self.current_player == 2:
-            print("place O")
-            obs = self.Box(np.zeros(9)) # TODO: Change this
+        # Place X or O, 1 or 2 respectively
+        if self._current_player in [1, 2]:
+            self._env_state[action] = self._current_player
+            obs = copy.deepcopy(self._env_state)
         else:
             raise Exception("Current player should be X or O (1 or 2 respectively)")
+
+        print(f"Player {self.current_player_dict[self._current_player]} took action {action}")
 
         # Swap current player
         self._current_player = 3 - self._current_player
@@ -76,15 +78,22 @@ class TicTacToeEnv(gym.Env):
     def reset(self):
         # Current player can be either 1 (X) or 2 (O).
         self._current_player = np.random.randint(1, 3)  # [1, 3)
-        
-        pass
+        self._env_state = np.zeros(9)
+        return np.zeros(9)  # initial observation
 
-    def print_current_player():
+    def render(self, mode="human", close=False):
+        # parameters are there just to not have errors..
+        # TODO: add prettier rendering !
+        print(self._env_state)  # env state = agent state
+
+    def print_current_player(self):
         print(f"Current player is: {self.current_player_dict[self._current_player]}")
         
-
     def check_action_possible(self, action):
-        pass
+        return self._env_state[action] == 0
+
+    def get_possibe_actions(self):
+        return np.flatnonzero(self._env_state == 0)
 
     def check_done(self):
         # Check board configuration
