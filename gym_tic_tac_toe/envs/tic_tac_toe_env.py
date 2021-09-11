@@ -20,6 +20,8 @@ class TicTacToeEnv(gym.Env):
         6 7 8
     Each action is an integer and corresponds to placing an X or an O
     (depending on who is playing)
+
+    Rewards are always from the point of view of player X (or 1)
     
     """
     def __init__(self, r_win=1, r_draw=0, r_lost=0):
@@ -78,14 +80,16 @@ class TicTacToeEnv(gym.Env):
     def reset(self):
         # Current player can be either 1 (X) or 2 (O).
         self._current_player = np.random.randint(1, 3)  # [1, 3)
-        self._env_state = np.zeros(9)
+        self._env_state = np.zeros(9, dtype=np.int)
         return np.zeros(9)  # initial observation
 
     def render(self, mode="human", close=False):
         # parameters are there just to not have errors..
         # TODO: add prettier rendering !
-        print(self._env_state)  # env state = agent state
 
+        # env state = agent state
+        print(self._env_state.reshape((3, 3)))
+    
     def print_current_player(self):
         print(f"Current player is: {self.current_player_dict[self._current_player]}")
         
@@ -97,6 +101,22 @@ class TicTacToeEnv(gym.Env):
 
     def check_done(self):
         # Check board configuration
+        board = copy.deepcopy(self._env_state).reshape((3, 3))
+
+        # For each player, only take a look at their pieces
+        for player_num, b in [(player_num, (board == player_num)) for player_num in [1, 2]]:
+            # Check horizontallym, vertically, diagonally
+            three_in_horizontal = (3 in np.sum(b, axis=0))
+            three_in_vertical = (3 in np.sum(b, axis=1))
+            three_in_diagonal = (np.sum(np.diag(b)) == 3) or (np.sum(np.diag(np.fliplr(b))) == 3)
+            
+            if three_in_horizontal or three_in_vertical or three_in_diagonal:
+                # r_win if player_num = 1, r_lose if player_num = 2
+                return self._r_win*(2-player_num) + self._r_lost*(player_num-1), True
+
+        # check if board is filled
+        if np.sum(self._env_state != 0) == 9:
+            return self._r_draw, True
         
-        # Return dummy stuffs
+        # Still in an intermediate step !
         return 0, False
