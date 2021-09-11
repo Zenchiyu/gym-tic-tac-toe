@@ -1,4 +1,12 @@
 import gym
+# For "Cannot re-register id: TicTacToe" error, can comment it if
+# no error
+env_dict = gym.envs.registration.registry.env_specs.copy()
+for env in env_dict:
+     if 'TicTacToe' in env:
+          print('Remove {} from registry'.format(env))
+          del gym.envs.registration.registry.env_specs[env]
+          
 import gym_tic_tac_toe
 import numpy as np
 

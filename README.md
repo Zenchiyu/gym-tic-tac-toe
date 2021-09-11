@@ -9,6 +9,9 @@ cd gym_tic_tac_toe
 pip install -e .
 ```
 
+If you use Anaconda, first activate your environment with `conda activate <environment_name>` and then 
+use `pip install -e <path_to_cloned_repo>`
+
 # How to use ?
 
 ```python

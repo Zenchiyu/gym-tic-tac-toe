@@ -44,7 +44,7 @@ class TicTacToeEnv(gym.Env):
 
         # 9 dimensions, 3 possible values for each
         # 0 for no X no O, 1 for X, 2 for O
-        self.observation_space = spaces.Box(np.zeros(9), 2*np.ones(9), dtype=np.int)
+        self.observation_space = spaces.Box(0, 2, shape=(9, ), dtype=int)
         
         self.current_player_dict = {1: "X", 2: "O"}
         
@@ -80,8 +80,8 @@ class TicTacToeEnv(gym.Env):
     def reset(self):
         # Current player can be either 1 (X) or 2 (O).
         self._current_player = np.random.randint(1, 3)  # [1, 3)
-        self._env_state = np.zeros(9, dtype=np.int)
-        return np.zeros(9)  # initial observation
+        self._env_state = np.zeros(9, dtype=int)
+        return np.zeros(9, dtype=int)  # initial observation
 
     def render(self, mode="human", close=False):
         # parameters are there just to not have errors..
@@ -106,8 +106,8 @@ class TicTacToeEnv(gym.Env):
         # For each player, only take a look at their pieces
         for player_num, b in [(player_num, (board == player_num)) for player_num in [1, 2]]:
             # Check horizontallym, vertically, diagonally
-            three_in_horizontal = (3 in np.sum(b, axis=0))
-            three_in_vertical = (3 in np.sum(b, axis=1))
+            three_in_horizontal = (3 in np.sum(b, axis=1))
+            three_in_vertical = (3 in np.sum(b, axis=0))
             three_in_diagonal = (np.sum(np.diag(b)) == 3) or (np.sum(np.diag(np.fliplr(b))) == 3)
             
             if three_in_horizontal or three_in_vertical or three_in_diagonal:
