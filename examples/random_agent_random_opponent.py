@@ -12,7 +12,7 @@ print("Action space:", env.action_space)
 s = env.reset()
 
 for _ in range(9):
-    a = np.random.choice(env.get_possibe_actions())
+    a = np.random.choice(env.get_possible_actions())
     print(env.step(a))  # env.action_space.sample() not always permitted
     env.render()
     

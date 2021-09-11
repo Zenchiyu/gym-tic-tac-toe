@@ -92,7 +92,7 @@ class TicTacToeEnv(gym.Env):
     def check_action_possible(self, action):
         return self._env_state[action] == 0
 
-    def get_possibe_actions(self):
+    def get_possible_actions(self):
         return np.flatnonzero(self._env_state == 0)
 
     def check_done(self):
