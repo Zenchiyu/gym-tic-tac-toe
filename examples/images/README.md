@@ -3,7 +3,7 @@ Figures correspond to the estimated prob winning from empty board while learning
 They show the current learned value function where learning updates occurred either after only greedy moves or all moves.
 
 (Note: my explanations are not necessarily correct)
-## TD agent against random uniform opponent
+## TD agent against random uniform opponent (inspired by Exercise 1.4 Learning From Exploration from Sutton and Barto's book)
 
 To learn the value function, the update rule had 0.1 as step-size parameter (but kept constant) and the undiscounted formulation of the return (discount factor/rate `gamma=1`).
 In all cases, the behavior policy has a tendency to explore and is an epsilon-greedy strategy with `eps=0.2`
