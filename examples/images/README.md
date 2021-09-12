@@ -19,3 +19,11 @@ Average number of times (over 100 000 episodes) the player X won (same learned v
 
 We can also observe that we seems to get more reward when learning from exploration because the behavior policy takes
 into account the tendency to explore.
+
+We also used these
+```python
+ALPHA = 0.1
+EPSILON = 0.2
+GAMMA = 1
+```
+to estimate the state value function
