@@ -6,6 +6,11 @@ Created on Sat Sep 11 20:23:06 2021
 
 Trying to apply the same update rule as in Chap 1 introduction in Sutton
 and Barto's book but without the same initial values.
+
+Moreover, we held the step-size alpha parameter constant.
+
+Default code : do not learn from exploration and experiment with
+greedy policy after learning value function.
 """
 
 import gym
@@ -33,12 +38,12 @@ def sample_action(current_player, V, s, gamma=1, eps=0.2):
     s_nexts, rewards, _, _ = zip(*[env.simulate_one_step(s, a, current_player) for a in actions])
     
     # have to convert the numpy array into tuple because of the dict
-    if np.random.random() < eps:
+    if np.random.uniform() < eps:
         return np.random.choice(env.get_possible_actions())
     else:
         return np.argmax([reward + gamma*V[tuple(s_next)] if s[a] == 0 else -float("inf") for (s_next, reward, a) in zip(s_nexts, rewards, actions)])
     
-def sample_greedily(current_player, V, s, gamma=1, eps=0.2):
+def sample_greedily(current_player, V, s, gamma=1):
     actions = np.arange(env.action_space.n)
     s_nexts, rewards, _, _ = zip(*[env.simulate_one_step(s, a, current_player) for a in actions])
     
@@ -85,11 +90,13 @@ V = {tuple(state.tolist()): 0  for state in get_all_states(env.observation_space
     
 ALPHA = 0.1
 EPSILON = 0.2
-MAX_EPISODES = 10000
+MAX_EPISODES = 30000
 GAMMA = 1  # because episodic tasks and the maximum number of steps
 # of an episode is only 9
 
 logs = []
+avgs_Vs0 = []
+avg_Vs0 = 0
 
 for e in range(MAX_EPISODES):
     # Fully observable environment
@@ -110,23 +117,28 @@ for e in range(MAX_EPISODES):
         # update V using TD without exploratory moves
         if current_player_before_move == 1:
             # remove this condition and unindent the content if want to include exploratory moves
-            if sample_greedily(env.get_current_player(), V, s, gamma = GAMMA, eps=EPSILON) == a:  # Note: it's a bit an approximate check for the greedy move..
+            if sample_greedily(current_player_before_move, V, s, gamma = GAMMA) == a:  # Note: it's a bit an approximate check for the greedy move..
                 # Uncomment this if do not want to backup the if the first player
                 # is X and previous state was directly the empty board.
                 # if first_player == 1 and np.all(s_old == 0):
                 #     continue
                 V[(tuple(s_old))] = V[(tuple(s_old))] + ALPHA*(r + GAMMA*V[(tuple(s_new))]-V[(tuple(s_old))])
-                EPSILON /= 2
+                EPSILON *= 0.999  #/= 2
                 s_old = s_new
         
         s = s_new
         
         # env.render()
+    avg_Vs0 = avg_Vs0 + 1/(e+1)*(V[tuple([0]*9)] - avg_Vs0)
     logs.append(V[tuple([0]*9)])
+    avgs_Vs0.append(avg_Vs0)
     
 # Plotting value of the empty board (without knowing what is the initial player)
-plt.plot(logs)
+plt.plot(logs, label=fr"$V(s_0)$")
 plt.title("Estimated probability of winning for player X from the initial state for each episode")
+plt.plot(avgs_Vs0, label="avg")  # TODO: Maybe use EWA
+plt.legend()
+
 # Do not necessarily give the exact values..
 print(f"V[tuple([0]*9)]: {V[tuple([0]*9)]}\n\n")
 
@@ -134,7 +146,7 @@ print(f"V[tuple([0]*9)]: {V[tuple([0]*9)]}\n\n")
 # Now let's use the learned value function
 avg = 0
 
-for e in range(10*MAX_EPISODES):
+for e in range(MAX_EPISODES):
     s = env.reset()
     done = False
     while not done:
@@ -145,17 +157,18 @@ for e in range(10*MAX_EPISODES):
             # 2. If do learn from exploration: acting eps-greedily gives the most rewards
             
             # Example:
-            # 1. V[tuple([0]*9)]: 0.7347304824736642
+            # TODO: Update these values because I'm still updating the code
+            # 1. V[tuple([0]*9)]: 0.8824902326995245
             # Average number of times the player X won (same learned value function):
-            #  -greedy: 0.7156899999999914
-            #  -eps-greedy: 0.715540000000005
+            #  -greedy: 0.7179499999999913
+            #  -eps-greedy: 0.7171300000000064
                 
             # 2. V[tuple([0]*9)]: 0.7942112886509693
             # Average number of times the player X won (same learned value function):
             #  -greedy: 0.7166800000000111
             #  -eps-greedy: 0.7180299999999962
             
-            # a = sample_greedily(env.get_current_player(), V, s, gamma = GAMMA, eps=EPSILON)
+            # a = sample_greedily(env.get_current_player(), V, s, gamma = GAMMA)
             a = sample_action(env.get_current_player(), V, s, gamma = GAMMA, eps=EPSILON)
         else:
             a = np.random.choice(env.get_possible_actions())
@@ -167,6 +180,6 @@ for e in range(10*MAX_EPISODES):
 # print(f"The reward is: {r} and the outcome is: {info['outcome']}")
 # print(f"env.check_done_state(s_new) : {env.check_done_state(s_new)}")
 
-print(f"Average number of times the player X won: {avg}")
+print(f"% number of times the player X won: {avg}")
 
 env.close()
