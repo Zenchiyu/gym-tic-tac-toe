@@ -61,7 +61,7 @@ class TicTacToeEnv(gym.Env):
         if not(self.check_action_possible(action)):
             raise Exception("Action not permitted")
 
-        # Place X or O, 1 or 2 respectively
+        # Place X or O; 1 or 2 respectively
         if self._current_player in [1, 2]:
             self._env_state[action] = self._current_player
             obs = copy.deepcopy(self._env_state)
@@ -108,21 +108,21 @@ class TicTacToeEnv(gym.Env):
         return np.flatnonzero(self._env_state == 0)
 
     def check_done(self):
-        return self.check_done_state(copy.deepcopy(self._env_state))
+        return self.check_done_state(self._env_state)
     
     def check_done_state(self, state):
         """
         Check outcome of state, can be different than our current game
         """
         # Check board configuration
-        board = copy.deepcopy(state).reshape((3, 3))
+        board = state.reshape((3, 3))
         
         # For each player, only take a look at their pieces
         for player_num, b in [(player_num, (board == player_num)) for player_num in [1, 2]]:
-            # Check horizontallym, vertically, diagonally
+            # Check horizontally, vertically, diagonally
             three_in_horizontal = (3 in np.sum(b, axis=1))
             three_in_vertical = (3 in np.sum(b, axis=0))
-            three_in_diagonal = (np.sum(np.diag(b)) == 3) or (np.sum(np.diag(np.fliplr(b))) == 3)
+            three_in_diagonal = (np.trace(b) == 3) or (np.trace(np.fliplr(b)) == 3)
             
             if three_in_horizontal or three_in_vertical or three_in_diagonal:
                 # r_win if player_num = 1, r_lose if player_num = 2
